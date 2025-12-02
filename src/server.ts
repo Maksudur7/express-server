@@ -8,7 +8,7 @@ const app = express()
 const port = 5000;
 app.use(express.json())
 // app.use(express.urlencoded())
-
+// database holo neon 
 const pool = new Pool({
     connectionString: `${process.env.CONNECTION_STR}`
 })
@@ -41,7 +41,7 @@ const initDB = async () => {
 }
 initDB();
 
-const logger = (req: Request, res: Response, next: NextFunction)=>{
+const logger = (req: Request, res: Response, next: NextFunction) => {
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.path} \n`);
     next()
 }
@@ -75,7 +75,11 @@ app.post("/users", async (req: Request, res: Response) => {
 app.get("/users", async (req: Request, res: Response) => {
     try {
         const result = await pool.query(`SELECT * FROM users`)
-        res.status(200).json({ success: true, message: "Users reatrived successfully", data: result.rows })
+        res.status(200).json({
+            success: true,
+            message: "Users reatrived successfully",
+            data: result.rows
+        })
     } catch (err: any) {
         res.status(500).json({
             success: false,
@@ -161,8 +165,74 @@ app.delete("/users/:id", async (req: Request, res: Response) => {
 
 // hw for todo table
 
+app.get("/todos", async (req: Request, res: Response) => {
+    try {
+        const result = await pool.query(`SELECT * FROM todos`)
+        res.status(200).json({
+            success: true,
+            message: "todos reatrived successfully",
+            data: result.rows
+        })
+    } catch (err: any) {
+        res.status(500).json({
+            success: false,
+            message: err.message,
+            datails: err
+        })
+    }
+})
+
+app.put("/todos/:id", async (req: Request, res: Response) => {
+    // console.log(req.params.id);
+    const { title, completed } = req.body;
+    try {
+        const result = await pool.query(`UPDATE todos SET title=$1, completed=$2 WHERE id=$3 RETURNING * `, [title, completed, req.params.id])
+        if (result.rows.length === 0) {
+            res.status(404).json({
+                success: false,
+                message: "todos not found",
+            })
+        } else {
+            res.status(200).json({
+                success: true,
+                message: "todos updated successfully",
+                data: result.rows[0]
+            })
+        }
+    } catch (err: any) {
+        res.status(500).json({
+            success: false,
+            message: err.message,
+            datails: err
+        })
+    }
+})
+app.delete("/todos/:id", async (req: Request, res: Response) => {
+    try {
+        const result = await pool.query(`DELETE FROM todos WHERE id = $1 RETURNING`, [req.params.id])
+        if (result.rowCount === 0) {
+            res.status(404).json({
+                success: false,
+                message: "todos not found",
+            })
+        } else {
+            res.status(200).json({
+                success: true,
+                message: "todos Deleted successfully",
+                data: null
+            })
+        }
+    } catch (err: any) {
+        res.status(500).json({
+            success: false,
+            message: err.message,
+            datails: err
+        })
+    }
+})
+
 // 404 handel kora
-app.use((req: Request, res: Response)=>{
+app.use((req: Request, res: Response) => {
     res.status(404).json({
         success: false,
         message: "Route not found",
