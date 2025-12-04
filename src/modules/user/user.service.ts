@@ -3,9 +3,9 @@ import bcrypt from "bcryptjs";
 // post route
 
 const createUser = async (payload: Record<string, unknown>) => {
-    const { name, email, password } = payload;
+    const { name, role, email, password } = payload;
     const hashedPass = await bcrypt.hash(password as string, 10);
-    const result = await pool.query(`INSERT INTO users(name, email, password) VALUES($1, $2) RETURNING *`, [name, email, hashedPass])
+    const result = await pool.query(`INSERT INTO users(name,role, email, password) VALUES($1, $2, $3, $4) RETURNING *`, [name, role, email, hashedPass])
     return result;
 }
 const getUser = async () => {

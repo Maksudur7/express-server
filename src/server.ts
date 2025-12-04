@@ -20,6 +20,7 @@ app.get('/', logger, (req: Request, res: Response) => {
 app.use("/users", userRoutes )
 app.use("/todos", todoRouter)
 app.use("/auth", authRoutes)
+
 // 404 handel kora
 app.use((req: Request, res: Response) => {
     res.status(404).json({
